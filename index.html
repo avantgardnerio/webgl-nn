@@ -36,8 +36,6 @@
 			var gl;
 			var shaderProgram;
 			var neheTexture;
-			var mvMatrix = mat4.create();
-			var mvMatrixStack = [];
 			var cubeVertexPositionBuffer;
 			var cubeVertexTextureCoordBuffer;
 			var cubeVertexIndexBuffer;
@@ -75,10 +73,6 @@
 				gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-				mat4.identity(mvMatrix);
-
-				mat4.translate(mvMatrix, [0.0, 0.0, -5.0]);
-
 				gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
 				gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
@@ -90,7 +84,6 @@
 				gl.uniform1i(shaderProgram.samplerUniform, 0);
 
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-				gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 				gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 			}
 
@@ -177,19 +170,6 @@
 					handleLoadedTexture(neheTexture)
 				}
 				neheTexture.image.src = dataURL;
-			}
-
-			function mvPushMatrix() {
-				var copy = mat4.create();
-				mat4.set(mvMatrix, copy);
-				mvMatrixStack.push(copy);
-			}
-
-			function mvPopMatrix() {
-				if (mvMatrixStack.length == 0) {
-					throw "Invalid popMatrix!";
-				}
-				mvMatrix = mvMatrixStack.pop();
 			}
 
 			function initBuffers() {
