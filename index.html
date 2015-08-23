@@ -22,14 +22,10 @@
 			attribute vec3 aVertexPosition;
 			attribute vec2 aTextureCoord;
 
-			uniform mat4 uMVMatrix;
-			uniform mat4 uPMatrix;
-
 			varying vec2 vTextureCoord;
 
-
 			void main(void) {
-				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				gl_Position = vec4(aVertexPosition, 1.0);
 				vTextureCoord = aTextureCoord;
 			}
 		</script>
@@ -42,7 +38,6 @@
 			var neheTexture;
 			var mvMatrix = mat4.create();
 			var mvMatrixStack = [];
-			var pMatrix = mat4.create();
 			var cubeVertexPositionBuffer;
 			var cubeVertexTextureCoordBuffer;
 			var cubeVertexIndexBuffer;
@@ -58,7 +53,6 @@
 				initTexture();
 
 				gl.clearColor(0.0, 0.0, 0.0, 1.0);
-				gl.enable(gl.DEPTH_TEST);
 
 				tick();
 			}
@@ -83,8 +77,6 @@
 			function drawScene() {
 				gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-				mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
 				mat4.identity(mvMatrix);
 
@@ -165,8 +157,6 @@
 				shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
 				gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
-				shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-				shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 				shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
 			}
 
@@ -210,7 +200,6 @@
 			}
 
 			function setMatrixUniforms() {
-				gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 				gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 			}
 
@@ -222,11 +211,10 @@
 				cubeVertexPositionBuffer = gl.createBuffer();
 				gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
 				vertices = [
-					// Front face
-					-1.0, -1.0,  1.0,
-					 1.0, -1.0,  1.0,
-					 1.0,  1.0,  1.0,
-					-1.0,  1.0,  1.0
+					-1.0, -1.0,  0.0,
+					 1.0, -1.0,  0.0,
+					 1.0,  1.0,  0.0,
+					-1.0,  1.0,  0.0
 				];
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 				cubeVertexPositionBuffer.itemSize = 3;
@@ -235,7 +223,6 @@
 				cubeVertexTextureCoordBuffer = gl.createBuffer();
 				gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
 				var textureCoords = [
-				  // Front face
 				  0.0, 0.0,
 				  1.0, 0.0,
 				  1.0, 1.0,
@@ -248,7 +235,7 @@
 				cubeVertexIndexBuffer = gl.createBuffer();
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
 				var cubeVertexIndices = [
-					0, 1, 2,      0, 2, 3    // Front face
+					0, 1, 2,      0, 2, 3
 				];
 				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
 				cubeVertexIndexBuffer.itemSize = 1;
