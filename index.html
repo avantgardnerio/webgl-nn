@@ -260,7 +260,7 @@
 				];
 				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 				cubeVertexPositionBuffer.itemSize = 3;
-				cubeVertexPositionBuffer.numItems = 24;
+				cubeVertexPositionBuffer.numItems = vertices.length;
 
 				cubeVertexTextureCoordBuffer = gl.createBuffer();
 				gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
