@@ -53,6 +53,8 @@
 				
 				// File reader
 				var fileInput = document.getElementById('fileInput');
+				var cnvInput = document.getElementById('cnvInput');
+				var ctx = cnvInput.getContext('2d');
 				fileInput.addEventListener('change', function(e) {
 					var file = fileInput.files[0];
 
@@ -60,14 +62,26 @@
 
 					reader.onload = function(e) {
 						var dv = new DataView(reader.result);
-						var magic = dv.getUint32(0);
-						var imageCount = dv.getUint32(4);
-						var rowCount = dv.getUint32(8);
-						var colCount = dv.getUint32(12);
+						var pos = -4;
+						var magic = dv.getUint32(pos += 4);
+						var imageCount = dv.getUint32(pos += 4);
+						var rowCount = dv.getUint32(pos += 4);
+						var colCount = dv.getUint32(pos += 4);
 						console.log("magic=" + magic);
 						console.log("imageCount=" + imageCount);
 						console.log("rowCount=" + rowCount);
 						console.log("colCount=" + colCount);
+						
+						var imgByteSize = rowCount * colCount;
+						for(var imgIdx = 0; imgIdx < 3; imgIdx++) {
+							for(var y = 0; y < rowCount; y++) {
+								for(var x = 0; x < colCount; x++) {
+									var color = dv.getUint8(pos + (imgIdx * imgByteSize) + (y * colCount) + x);
+									ctx.fillStyle = "rgb(" + color + "," + color + "," + color + ")";
+									ctx.fillRect(x,y,1,1);
+								}
+							}
+						}
 					}
 
 					reader.readAsArrayBuffer(file);	
@@ -265,6 +279,7 @@
 	</head>
 	<body onload="webGLStart();">
 		Select training file: <input type="file" id="fileInput" /><br/>
+		<canvas id="cnvInput" width="28" height="28" />
 		<canvas id="lesson05-canvas" style="border: none;" width="500" height="500"></canvas>
 	</body>
 </html>
