@@ -75,6 +75,15 @@
 				squareVertexPositionBuffer.numItems = 4;
 			}
 
+			function drawScene() {
+				gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
+				gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
+			}
+
 			function getShader(gl, id) {
 				var shaderScript = document.getElementById(id);
 				if (!shaderScript) {
@@ -108,15 +117,6 @@
 				}
 
 				return shader;
-			}
-
-			function drawScene() {
-				gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-				gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
-				gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-				gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
 			}
 		</script>
 	</head>
