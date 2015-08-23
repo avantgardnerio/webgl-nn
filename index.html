@@ -50,6 +50,30 @@
 			var cubeVertexIndexBuffer;
 
 			function webGLStart() {
+				
+				// File reader
+				var fileInput = document.getElementById('fileInput');
+				fileInput.addEventListener('change', function(e) {
+					var file = fileInput.files[0];
+
+					var reader = new FileReader();
+
+					reader.onload = function(e) {
+						var dv = new DataView(reader.result);
+						var magic = dv.getUint32(0);
+						var imageCount = dv.getUint32(4);
+						var rowCount = dv.getUint32(8);
+						var colCount = dv.getUint32(12);
+						console.log("magic=" + magic);
+						console.log("imageCount=" + imageCount);
+						console.log("rowCount=" + rowCount);
+						console.log("colCount=" + colCount);
+					}
+
+					reader.readAsArrayBuffer(file);	
+				});
+
+				// WebGL
 				var canvas = document.getElementById("lesson05-canvas");
 				initGL(canvas);
 				initShaders();
@@ -240,6 +264,7 @@
 		</script>
 	</head>
 	<body onload="webGLStart();">
+		Select training file: <input type="file" id="fileInput" /><br/>
 		<canvas id="lesson05-canvas" style="border: none;" width="500" height="500"></canvas>
 	</body>
 </html>
