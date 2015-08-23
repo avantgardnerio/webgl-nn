@@ -15,17 +15,14 @@
 		<script id="shader-vs" type="x-shader/x-vertex">
 			attribute vec3 aVertexPosition;
 
-			uniform mat4 uMVMatrix;
-
 			void main(void) {
-				gl_Position = uMVMatrix * vec4(aVertexPosition, 1.0);
+				gl_Position = vec4(aVertexPosition, 1.0);
 			}
 		</script>
 
 		<script type="text/javascript">
 			var gl;
 			var shaderProgram;
-			var mvMatrix = mat4.create();
 			var squareVertexPositionBuffer;
 
 			function webGLStart() {
@@ -62,8 +59,6 @@
 
 				shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 				gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-				shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 			}
 
 			function initBuffers() {
@@ -119,11 +114,8 @@
 				gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-				mat4.identity(mvMatrix);
-
 				gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
 				gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-				gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems);
 			}
 		</script>
