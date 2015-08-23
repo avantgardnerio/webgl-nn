@@ -90,7 +90,7 @@
 				gl.uniform1i(shaderProgram.samplerUniform, 0);
 
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-				setMatrixUniforms();
+				gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 				gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 			}
 
@@ -190,14 +190,6 @@
 					throw "Invalid popMatrix!";
 				}
 				mvMatrix = mvMatrixStack.pop();
-			}
-
-			function setMatrixUniforms() {
-				gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
-			}
-
-			function degToRad(degrees) {
-				return degrees * Math.PI / 180;
 			}
 
 			function initBuffers() {
