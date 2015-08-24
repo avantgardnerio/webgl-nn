@@ -44,6 +44,8 @@
 			var IMG_HEIGHT = 29;
 			var IMG_FLT_SZ = IMG_WIDTH * IMG_HEIGHT * 4;
 			var IMG_BYTE_SZ = IMG_FLT_SZ * 4;
+			
+			var srcImgbytes;
 
 			var width = 256;
 			var height = 256;
@@ -77,8 +79,8 @@
 							console.log("imageCount=" + imageCount);
 							console.log("rowCount=" + rowCount);
 							console.log("colCount=" + colCount);
-							var bytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
-							var pixels = new Float32Array(bytes, 0, IMG_FLT_SZ * imageCount);
+							srcImgbytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
+							var pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
 							var pixIdx = 0;
 							
 							var imgByteSize = rowCount * colCount;
@@ -98,7 +100,7 @@
 								}
 							}
 							var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
-							var tmp = new Float32Array(bytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+							var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
 							replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
 							drawScene(tex, false);
 						}
