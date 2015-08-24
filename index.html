@@ -42,6 +42,8 @@
 			
 			var IMG_WIDTH = 29;
 			var IMG_HEIGHT = 29;
+			var IMG_FLT_SZ = IMG_WIDTH * IMG_HEIGHT * 4;
+			var IMG_BYTE_SZ = IMG_FLT_SZ * 4;
 
 			var width = 256;
 			var height = 256;
@@ -75,7 +77,8 @@
 							console.log("imageCount=" + imageCount);
 							console.log("rowCount=" + rowCount);
 							console.log("colCount=" + colCount);
-							var pixels = new Float32Array(IMG_WIDTH * IMG_HEIGHT * 4 * imageCount);
+							var bytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
+							var pixels = new Float32Array(bytes, 0, IMG_FLT_SZ * imageCount);
 							var pixIdx = 0;
 							
 							var imgByteSize = rowCount * colCount;
@@ -94,7 +97,9 @@
 									}
 								}
 							}
-							var tex = createTexture(pixels, 29, 29);
+							var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
+							var tmp = new Float32Array(bytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+							replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
 							drawScene(tex, false);
 						}
 						
@@ -250,6 +255,21 @@
 				
 				// Upload texture to GPU
 				floatTexture = createTexture(ar, width, height);
+			}
+			
+			function replaceTexture(tex, floatAr, width, height) {
+				gl.bindTexture(gl.TEXTURE_2D, tex);
+				gl.texImage2D(gl.TEXTURE_2D, 	// target - Specifies the target texture
+					0, 							// level - The level of detail value.
+					gl.RGBA, 					// internalformat - Specifies the number of color components in the texture.
+					width, 						// width - Width of texture image. Value used only when UInt8Array or Float32Array for pixels is specified.
+					height, 					// height - Height of texture image. Value used only when UInt8Array or Float32Array for pixels is specified.
+					0, 							// border - Specifies the width of the border. Must be 0. 
+					gl.RGBA, 					// format - Contains the format for the source pixel data. Must match internalformat (see above).
+					gl.FLOAT,					// type - The type of texture data. (gl.FLOAT creates 128 bit-per-pixel textures instead of 32 bit-per-pixel for the image)
+					floatAr						// pixels - The ImageData array, ArrayBufferView, HTMLCanvasElement, HTMLImageElement to use as a data source for the texture.
+				);				
+				gl.bindTexture(gl.TEXTURE_2D, null);
 			}
 			
 			function createTexture(floatAr, width, height) {
