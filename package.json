@@ -6,7 +6,7 @@
   "author": "Brent Gardner",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bgardner/webgl-nn"
+    "url": "https://github.com/bgard6977/webgl-nn"
   },
   "dependencies": {
     "js2glsl": "git://github.com/jdavidberger/js2glsl"
