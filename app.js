@@ -1,3 +1,8 @@
+var BlurShader = require('./BlurShader');
+
+var shaderSpec = new BlurShader(); 
+
+
 var IMG_WIDTH = 29;
 var IMG_HEIGHT = 29;
 var IMG_FLT_SZ = IMG_WIDTH * IMG_HEIGHT * 4;
@@ -58,23 +63,23 @@ function webGLStart() {
 		    }
 		}
 		
-		/*
+
 		// Test stripes for alignment
 		pixIdx = 0;
 		for(var y = 0; y < IMG_HEIGHT; y++) {
-		for(var x = 0; x < IMG_WIDTH; x++) {
-		var color = 0.0;
-		if(x == 0 || y == 0 || x == IMG_WIDTH-1 || y == IMG_HEIGHT-1) {
-		color = 1.0;
+		    for(var x = 0; x < IMG_WIDTH; x++) {
+			var color = 0.0;
+			if(x == 0 || y == 0 || x == IMG_WIDTH-1 || y == IMG_HEIGHT-1) {
+			    color = 1.0;
+			}
+			pixels[pixIdx + 0] = color;
+			pixels[pixIdx + 1] = color;
+			pixels[pixIdx + 2] = color;
+			pixels[pixIdx + 3] = 1.0;
+			pixIdx += 4;
+		    }
 		}
-		pixels[pixIdx + 0] = color;
-		pixels[pixIdx + 1] = color;
-		pixels[pixIdx + 2] = color;
-		pixels[pixIdx + 3] = 1.0;
-		pixIdx += 4;
-		}
-		}
-		*/
+
 		
 		var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
 		//var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
@@ -197,13 +202,7 @@ function getShader(gl, id) {
 }
 
 function initShaders() {
-    var fragmentShader = getShader(gl, "shader-blur");
-    var vertexShader = getShader(gl, "shader-vs");
-
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
+    shaderProgram = shaderSpec.GetProgram(gl)
 
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 	alert("Could not initialise shaders");
