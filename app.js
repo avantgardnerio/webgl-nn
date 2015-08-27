@@ -1,4 +1,5 @@
 var BlurShader = require('./BlurShader');
+var js2glsl = require("js2glsl");
 
 var shaderSpec = new BlurShader(); 
 
@@ -16,11 +17,36 @@ var gl;
 var shaderProgram;
 var floatTexture;
 var cubeVertexPositionBuffer;
-var cubeVertexTextureCoordBuffer;
-var cubeVertexIndexBuffer;
 
 function webGLStart() {
-    
+    var pixels; 
+    var testPatternButton = document.getElementById('test_pattern');
+    testPatternButton.addEventListener('click', function(e) {
+	// Test stripes for alignment
+	pixels = new Float32Array(IMG_HEIGHT*IMG_WIDTH*4);
+	pixIdx = 0;
+	for(var y = 0; y < IMG_HEIGHT; y++) {
+	    for(var x = 0; x < IMG_WIDTH; x++) {
+		var color = 0.0;
+		if(x == 0 || y == 0 || x == IMG_WIDTH-1 || y == IMG_HEIGHT-1) {
+		    color = 1.0;
+		}
+		pixels[pixIdx + 0] = color;
+		pixels[pixIdx + 1] = color;
+		pixels[pixIdx + 2] = color;
+		pixels[pixIdx + 3] = 1.0;
+		pixIdx += 4;
+	    }
+	}
+
+	draw2D(pixels);
+	var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
+	//var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+	//replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
+	drawScene(tex, false);
+	
+    });
+
     // File reader
     var fileInput = document.getElementById('fileInput');
     fileInput.addEventListener('change', function(e) {
@@ -43,7 +69,7 @@ function webGLStart() {
 		console.log("rowCount=" + rowCount);
 		console.log("colCount=" + colCount);
 		srcImgbytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
-		var pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
+		pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
 		var pixIdx = 0;
 		
 		var imgByteSize = rowCount * colCount;
@@ -55,32 +81,15 @@ function webGLStart() {
 				color = dv.getUint8(pos + (imgIdx * imgByteSize) + (y * colCount) + x) / 255.0;
 			    }
 			    pixels[pixIdx + 0] = color;
-			    pixels[pixIdx + 1] = color;
-			    pixels[pixIdx + 2] = color;
+			    pixels[pixIdx + 1] = 0;
+			    pixels[pixIdx + 2] = 0;
 			    pixels[pixIdx + 3] = 1.0;
 			    pixIdx += 4;
 			}
 		    }
 		}
-		
 
-		// Test stripes for alignment
-		pixIdx = 0;
-		for(var y = 0; y < IMG_HEIGHT; y++) {
-		    for(var x = 0; x < IMG_WIDTH; x++) {
-			var color = 0.0;
-			if(x == 0 || y == 0 || x == IMG_WIDTH-1 || y == IMG_HEIGHT-1) {
-			    color = 1.0;
-			}
-			pixels[pixIdx + 0] = color;
-			pixels[pixIdx + 1] = color;
-			pixels[pixIdx + 2] = color;
-			pixels[pixIdx + 3] = 1.0;
-			pixIdx += 4;
-		    }
-		}
-
-		
+		draw2D(pixels);
 		var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
 		//var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
 		//replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
@@ -110,6 +119,33 @@ function webGLStart() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     drawScene(floatTexture, false);
+
+}
+
+function draw2D(pixels) {
+   var canvas2d = document.getElementById("2d");
+    ctx = canvas2d.getContext("2d"); 
+
+    var w = canvas2d.width; 
+    var h = canvas2d.height;
+    var sw = 500;
+    var sh = 500; 
+    var img = ctx.createImageData(w,h); 
+    
+    shaderSpec.uniforms = {uSampler:  [pixels, IMG_WIDTH, IMG_HEIGHT] }; 
+    shaderSpec.varyings = {}; 
+    for(var x = 0;x <= sw;x++){
+	for(var y = 0;y <= sh;y++) {
+	    shaderSpec.varyings.vTextureCoord = [ x/w, y/h  ]; 
+	    var rgba = shaderSpec.FragmentColor(js2glsl.builtIns);
+	    var idx = (x + (h-y-1) * w) * 4; 
+	    for(var c = 0;c < 4;c++) {
+		img.data[idx + c] = Math.round(Math.max(0, Math.min(255, rgba[c] * 255))); 
+	    }
+	    img.data[idx + 3] = 255; 
+	}
+    }
+    ctx.putImageData(img, 0, 0);     
 }
 
 function initGL(canvas) {
@@ -148,15 +184,11 @@ function drawScene(texture, fbo) {
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-    gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeVertexPositionBuffer.numItems / 2 );
 
     // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
     if(fbo) {
@@ -164,41 +196,6 @@ function drawScene(texture, fbo) {
 	gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
 	console.log(pixels[0] + "," + pixels[1] + "," + pixels[2] + "," + pixels[3]);
     }
-}
-
-function getShader(gl, id) {
-    var shaderScript = document.getElementById(id);
-    if (!shaderScript) {
-	return null;
-    }
-
-    var str = "";
-    var k = shaderScript.firstChild;
-    while (k) {
-	if (k.nodeType == 3) {
-	    str += k.textContent;
-	}
-	k = k.nextSibling;
-    }
-
-    var shader;
-    if (shaderScript.type == "x-shader/x-fragment") {
-	shader = gl.createShader(gl.FRAGMENT_SHADER);
-    } else if (shaderScript.type == "x-shader/x-vertex") {
-	shader = gl.createShader(gl.VERTEX_SHADER);
-    } else {
-	return null;
-    }
-
-    gl.shaderSource(shader, str);
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-	alert(gl.getShaderInfoLog(shader));
-	return null;
-    }
-
-    return shader;
 }
 
 function initShaders() {
@@ -230,7 +227,9 @@ function initTexture() {
 	ar[i * 4 + 2] = 1;
 	ar[i * 4 + 3] = 1;
     }
-    
+
+
+    draw2D(ar);    
     // Upload texture to GPU
     floatTexture = createTexture(ar, width, height);
 }
@@ -277,35 +276,14 @@ function initBuffers() {
     cubeVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
     vertices = [
-	    -1.0, -1.0,  0.0,
-	1.0, -1.0,  0.0,
-	1.0,  1.0,  0.0,
-	    -1.0,  1.0,  0.0
+	    -1.0, -1.0,
+	     1.0, -1.0,
+	    -1.0,  1.0,
+	     1.0,  1.0,
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    cubeVertexPositionBuffer.itemSize = 3;
+    cubeVertexPositionBuffer.itemSize = 2;
     cubeVertexPositionBuffer.numItems = vertices.length;
-
-    cubeVertexTextureCoordBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
-    var textureCoords = [
-	0.0, 0.0,
-	1.0, 0.0,
-	1.0, 1.0,
-	0.0, 1.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
-    cubeVertexTextureCoordBuffer.itemSize = 2;
-    cubeVertexTextureCoordBuffer.numItems = vertices.length;
-
-    cubeVertexIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-    var cubeVertexIndices = [
-	0, 1, 2,      0, 2, 3
-    ];
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
-    cubeVertexIndexBuffer.itemSize = 1;
-    cubeVertexIndexBuffer.numItems = cubeVertexIndices.length;
 }
 
 module.exports = webGLStart;

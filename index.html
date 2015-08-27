@@ -12,75 +12,11 @@
 
 		<script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
 		<script type="text/javascript" src="webgl-utils.js"></script>
-
-		<script id="shader-fs" type="x-shader/x-fragment">
-			precision mediump float;
-
-			varying vec2 vTextureCoord;
-
-			uniform sampler2D uSampler;
-
-			void main(void) {
-				gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-			}
-		</script>
-		 
-		<script id="shader-blur" type="x-shader/x-fragment">
-			precision mediump float;
-
-			varying vec2 vTextureCoord;
-
-			uniform sampler2D uSampler;
-			
-			void main(void) {
-				vec4 val = vec4(0.0, 0.0, 0.0, 0.0);
-				// kx & ky = 5x5 kernel
-				const float halfSize = 2.0;
-				float sz = halfSize * 2.0 + 1.0;
-				for(float ky = -halfSize; ky <= halfSize; ky++) {
-					for(float kx = -halfSize; kx <= halfSize; kx++) {
-						// vTextureCoord = [0,1] -> [0,29]
-						float fmx = mod(vTextureCoord.s * 3.0, 1.0);
-						float fmy = mod(vTextureCoord.t * 3.0, 1.0);
-
-						// floor((m - 5) / 2) + 1
-						// 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
-						// destination (0-13)
-						float dx = (fmx * 15.0); // WTF? 15 should be 13
-						float dy = (fmy * 15.0);
-
-						// source
-						// 0 * 2 + -2 + 2 = 0
-						// 0 * 2 + 2 + 2 = 4
-						// 14 * 2 = 28 - 2 + 2 = 28
-						// 14 * 2 = 28 + 2 + 2 = 32 - doh
-						float sx = (dx * 2.0) + kx + 2.0;
-						float sy = (dy * 2.0) + ky + 2.0;
-
-						val += texture2D(uSampler, vec2(sx / 29.0, sy / 29.0));
-					}
-				}
-				gl_FragColor = val / (sz * sz);
-				//gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-			}
-		</script>
-
-		<script id="shader-vs" type="x-shader/x-vertex">
-			attribute vec3 aVertexPosition;
-			attribute vec2 aTextureCoord;
-
-			varying vec2 vTextureCoord;
-
-			void main(void) {
-				gl_Position = vec4(aVertexPosition, 1.0);
-				vTextureCoord = aTextureCoord;
-			}
-		</script>
-
 		<script type="text/javascript" src="app.bundle.js"></script>		
 	</head>
 	<body onload="app()">
-		Select training file: <input type="file" id="fileInput" /><br/>
-		<canvas id="lesson05-canvas" style="border: none;" width="500" height="500"></canvas>
+		Select training file: <input type="file" id="fileInput" /> <button id='test_pattern'>Test Pattern</button> <br/>
+		<canvas id="lesson05-canvas" style="border: 1px solid black;" width="500" height="500"></canvas>
+		<canvas id="2d" style="border:  1px solid black;" width="500" height="500"></canvas>
 	</body>
 </html>
