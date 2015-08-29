@@ -34,8 +34,8 @@ BlurShader.prototype.FragmentColor = function (builtIns) {
     var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * scale, 1.0);
 
     // Round down into integer land [0,12]
-    var dx = Math.floor(fmx * (dst_sz-1));
-    var dy = Math.floor(fmy * (dst_sz-1));
+    var dx = Math.floor(fmx * dst_sz);
+    var dy = Math.floor(fmy * dst_sz);
 
     // floor((m - 5) / 2) + 1
     // 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
