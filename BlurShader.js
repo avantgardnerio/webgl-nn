@@ -20,41 +20,35 @@ BlurShader.prototype.VertexPosition = function (builtIns) {
 BlurShader.prototype.FragmentColor = function (builtIns) {
     var val = [0, 0, 0, 0];
 
-    var image_size = 29.0;
-    var pixel_middle = 0.5 / image_size;
+    var src_sz = 29.0;
+    var dst_sz = 13.0;
+    var scale = 3.0;
+    var pixel_middle = 0.5 / src_sz;
 
     // kx & ky = 5x5 kernel
-    var kw = 5.0;
-    var kh = 5.0;
-    var halfSize = 2.5;
-    var sz = halfSize * 2.0 + 1.0;
+    var halfSize = 2.0;
+    var kernel_sz = halfSize * 2.0 + 1.0;
 
-    // vTextureCoord = [0,1] -> [0,29]
-    var fmx = builtIns.mod(this.varyings.vTextureCoord[0] * 3.0, 1.0) - pixel_middle;
-    var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * 3.0, 1.0) - pixel_middle;
+    // Three tiles of output per one pass over the input [0,1)
+    var fmx = builtIns.mod(this.varyings.vTextureCoord[0] * scale, 1.0);
+    var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * scale, 1.0);
+
+    // Round down into integer land [0,12]
+    var dx = Math.floor(fmx * (dst_sz-1));
+    var dy = Math.floor(fmy * (dst_sz-1));
 
     // floor((m - 5) / 2) + 1
     // 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
-    // destination (0-13)
-    var dx = (fmx * 13.0); // WTF? 15 should be 13
-    var dy = (fmy * 13.0);
-
     for (var ky = -halfSize; ky <= halfSize; ky++) {
         for (var kx = -halfSize; kx <= halfSize; kx++) {
-            // source
-            // 0 * 2 + -2 + 2 = 0
-            // 0 * 2 + 2 + 2 = 4
-            // 14 * 2 = 28 - 2 + 2 = 28
-            // 14 * 2 = 28 + 2 + 2 = 32 - doh
-            var sx = (dx * 2.0) + kx + 2.0;
-            var sy = (dy * 2.0) + ky + 2.0;
-
-            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / 29.0, sy / 29.0]));
+            var sx = (dx * 2.0) + 2.0 + kx;
+            var sy = (dy * 2.0) + 2.0 + ky;
+            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / 28.0, sy / 28.0]));
         }
     }
 
-    var k = sz * sz;
-    return [val[0] / k, val[1] / k * Math.abs(this.varyings.vTextureCoord[0] * this.varyings.vTextureCoord[1]), val[2] / k, val[3] / k];
+    var k = kernel_sz * kernel_sz;
+    return [val[0] / k, val[1] / k, val[2] / k, 1];
 
     //var rtn = builtIns.texture2D(this.uniforms.uSampler, [fmx,fmy]);
 
