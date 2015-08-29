@@ -41,9 +41,9 @@ BlurShader.prototype.FragmentColor = function (builtIns) {
     // 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
     for (var ky = -halfSize; ky <= halfSize; ky++) {
         for (var kx = -halfSize; kx <= halfSize; kx++) {
-            var sx = (dx * 2.0) + 2.0 + kx;
-            var sy = (dy * 2.0) + 2.0 + ky;
-            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / 28.0, sy / 28.0]));
+            var sx = (dx * 2.0) + 2.0 + kx + 0.5;
+            var sy = (dy * 2.0) + 2.0 + ky + 0.5;
+            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / 29.0, sy / 29.0]));
         }
     }
 
