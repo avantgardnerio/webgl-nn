@@ -18,36 +18,16 @@ var shaderProgram;
 var floatTexture;
 var vertexBuffer;
 
-function createTestPattern() {
-
-}
 
 function webGLStart() {
     var testPatternButton = document.getElementById('test_pattern');
     testPatternButton.addEventListener('click', function (e) {
-        // Test stripes for alignment
-        var pixels = new Float32Array(IMG_HEIGHT * IMG_WIDTH * 4);
-        var pixIdx = 0;
-        for (var y = 0; y < IMG_HEIGHT; y++) {
-            for (var x = 0; x < IMG_WIDTH; x++) {
-                var color = 0.0;
-                if (x < 5 || y < 5 || x >= IMG_WIDTH - 5 || y >= IMG_HEIGHT - 5) {
-                    color = 1.0;
-                }
-                pixels[pixIdx + 0] = color;
-                pixels[pixIdx + 1] = color;
-                pixels[pixIdx + 2] = color;
-                pixels[pixIdx + 3] = 1.0;
-                pixIdx += 4;
-            }
-        }
-
+        var pixels = createTestPattern();
         draw2D(pixels);
         var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
         //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
         //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
         drawScene(tex, false);
-
     });
 
     // File reader
@@ -294,6 +274,11 @@ function createTexture(floatAr, width, height) {
     return tex;
 }
 
+/**
+ * Create a unit square vertex buffer to draw a texture on
+ *
+ * @returns {VertexBuffer} Unit square
+ */
 function createSquareVertexBuffer() {
     var vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -308,6 +293,30 @@ function createSquareVertexBuffer() {
     vertexBuffer.numItems = vertAr.length;
 
     return vertexBuffer;
+}
+
+/**
+ * Generate test stripes for alignment
+ *
+ * @returns {Float32Array} test stripes for alignment
+ */
+function createTestPattern() {
+    var pixels = new Float32Array(IMG_HEIGHT * IMG_WIDTH * 4);
+    var pixIdx = 0;
+    for (var y = 0; y < IMG_HEIGHT; y++) {
+        for (var x = 0; x < IMG_WIDTH; x++) {
+            var color = 0.0;
+            if (x < 5 || y < 5 || x >= IMG_WIDTH - 5 || y >= IMG_HEIGHT - 5) {
+                color = 1.0;
+            }
+            pixels[pixIdx + 0] = color;
+            pixels[pixIdx + 1] = color;
+            pixels[pixIdx + 2] = color;
+            pixels[pixIdx + 3] = 1.0;
+            pixIdx += 4;
+        }
+    }
+    return pixels;
 }
 
 module.exports = webGLStart;
