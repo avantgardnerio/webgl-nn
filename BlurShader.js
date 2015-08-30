@@ -20,14 +20,12 @@ BlurShader.prototype.VertexPosition = function (builtIns) {
 BlurShader.prototype.FragmentColor = function (builtIns) {
     var val = [0, 0, 0, 0];
 
-    var src_sz = 29.0;
-    var dst_sz = 13.0;
-    var scale = 3.0;
-    var pixel_middle = 0.5 / src_sz;
-
-    // kx & ky = 5x5 kernel
-    var halfSize = 2.0;
-    var kernel_sz = halfSize * 2.0 + 1.0;
+    var src_sz = 29.0;                      // Size of the source texture / layer / feature map
+    var dst_sz = 13.0;                      // Size of the destination texture / layer / feature map
+    var scale = 3.0;                        // How many patterns are tiled on the output
+    var skip = 2.0;                         // Skip every other row & column
+    var halfSize = 2.0;                     // "half" the kernel size
+    var kernel_sz = halfSize * 2.0 + 1.0;   // Full kernel size
 
     // Three tiles of output per one pass over the input [0,1)
     var fmx = builtIns.mod(this.varyings.vTextureCoord[0] * scale, 1.0);
@@ -41,17 +39,15 @@ BlurShader.prototype.FragmentColor = function (builtIns) {
     // 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
     for (var ky = -halfSize; ky <= halfSize; ky++) {
         for (var kx = -halfSize; kx <= halfSize; kx++) {
-            var sx = (dx * 2.0) + 2.0 + kx + 0.5;
-            var sy = (dy * 2.0) + 2.0 + ky + 0.5;
-            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / 29.0, sy / 29.0]));
+            var sx = (dx * skip) + halfSize + kx + 0.5;
+            var sy = (dy * skip) + halfSize + ky + 0.5;
+            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / src_sz, sy / src_sz]));
         }
     }
 
+    // Average - TODO: Real squash function
     var k = kernel_sz * kernel_sz;
     return [val[0] / k, val[1] / k, val[2] / k, 1];
-
-    //var rtn = builtIns.texture2D(this.uniforms.uSampler, [fmx,fmy]);
-
 };
 
 module.exports = BlurShader; 
