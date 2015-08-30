@@ -41,7 +41,7 @@ BlurShader.prototype.FragmentColor = function (builtIns) {
         for (var kx = -halfSize; kx <= halfSize; kx++) {
             var sx = (dx * skip) + halfSize + kx + 0.5;
             var sy = (dy * skip) + halfSize + ky + 0.5;
-            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / src_sz, sy / src_sz]));
+            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / this.uniforms.sourceSize, sy / this.uniforms.sourceSize]));
         }
     }
 

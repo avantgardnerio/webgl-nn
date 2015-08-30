@@ -187,6 +187,7 @@ function drawScene(texture, fbo) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
+    gl.uniform1f(shaderProgram.sourceSize, 29.0);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeVertexPositionBuffer.numItems / 2);
 
@@ -214,6 +215,7 @@ function initShaders() {
     gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+    shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
 }
 
 function initTexture() {
