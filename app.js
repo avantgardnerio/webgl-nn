@@ -28,7 +28,7 @@ function webGLStart() {
         for (var y = 0; y < IMG_HEIGHT; y++) {
             for (var x = 0; x < IMG_WIDTH; x++) {
                 var color = 0.0;
-                if (x == 0 || y == 0 || x == IMG_WIDTH - 1 || y == IMG_HEIGHT - 1) {
+                if (x < 5 || y < 5 || x >= IMG_WIDTH - 5 || y >= IMG_HEIGHT - 5) {
                     color = 1.0;
                 }
                 pixels[pixIdx + 0] = color;
