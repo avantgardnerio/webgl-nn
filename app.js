@@ -18,17 +18,8 @@ var shaderProgram;
 var floatTexture;
 var vertexBuffer;
 
-
 function webGLStart() {
-    var testPatternButton = document.getElementById('test_pattern');
-    testPatternButton.addEventListener('click', function (e) {
-        var pixels = createTestPattern();
-        draw2D(pixels);
-        var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
-        //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-        //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
-        drawScene(tex, false);
-    });
+    document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
 
     // File reader
     var fileInput = document.getElementById('fileInput');
@@ -272,6 +263,18 @@ function createTexture(floatAr, width, height) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     return tex;
+}
+
+/**
+ * Generate a test pattern and draw it in 2d & 3d
+ */
+function onTestPatternClick() {
+    var pixels = createTestPattern();
+    draw2D(pixels);
+    var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
+    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+    //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
+    drawScene(tex, false);
 }
 
 /**
