@@ -20,7 +20,7 @@ BlurShader.prototype.VertexPosition = function (builtIns) {
 BlurShader.prototype.FragmentColor = function (builtIns) {
     var val = [0, 0, 0, 0];
 
-    var skip = 2.0;                         // Skip every other row & column
+    // TODO: Figure out how to parameterize kernel_sz
     var halfSize = 2.0;                     // "half" the kernel size
     var kernel_sz = halfSize * 2.0 + 1.0;   // Full kernel size
 
@@ -28,17 +28,20 @@ BlurShader.prototype.FragmentColor = function (builtIns) {
     var fmx = builtIns.mod(this.varyings.vTextureCoord[0] * this.uniforms.tileCount, 1.0);
     var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * this.uniforms.tileCount, 1.0);
 
-    // Round down into integer land [0,12]
+    // Round down into integer destination space [0,12]
     var dx = Math.floor(fmx * this.uniforms.destinationSize);
     var dy = Math.floor(fmy * this.uniforms.destinationSize);
 
-    // floor((m - 5) / 2) + 1
-    // 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
+    // Scan 5x5 kernel pixels
     for (var ky = -halfSize; ky <= halfSize; ky++) {
         for (var kx = -halfSize; kx <= halfSize; kx++) {
-            var sx = (dx * skip) + halfSize + kx + 0.5;
-            var sy = (dy * skip) + halfSize + ky + 0.5;
-            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, [sx / this.uniforms.sourceSize, sy / this.uniforms.sourceSize]));
+            // sx & sy in source space [0.5, 4.5] - [24.5, 28.5]
+            var sx = (dx * this.uniforms.skipCount) + halfSize + kx + 0.5;
+            var sy = (dy * this.uniforms.skipCount) + halfSize + ky + 0.5;
+
+            // Texture position goes back to [0,1) in source space
+            var tp = [sx / this.uniforms.sourceSize, sy / this.uniforms.sourceSize];
+            val = builtIns.addVecs4(val, builtIns.texture2D(this.uniforms.uSampler, tp));
         }
     }
 

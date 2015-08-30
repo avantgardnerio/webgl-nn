@@ -136,7 +136,8 @@ function draw2D(pixels) {
         uSampler: [pixels, IMG_WIDTH, IMG_HEIGHT],
         sourceSize: 29.0,
         destinationSize: 13.0,
-        tileCount: 3
+        tileCount: 3.0,
+        skipCount: 2.0
     };
     shaderSpec.varyings = {};
     for (var x = 0; x <= sw; x++) {
@@ -195,6 +196,7 @@ function drawScene(texture, fbo) {
 
     // Upload constants
     gl.uniform1f(shaderProgram.tileCount, 3.0);
+    gl.uniform1f(shaderProgram.skipCount, 2.0);
     gl.uniform1f(shaderProgram.sourceSize, 29.0);
     gl.uniform1f(shaderProgram.destinationSize, 13.0);
 
@@ -226,6 +228,7 @@ function initShaders() {
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
 
     shaderProgram.tileCount = gl.getUniformLocation(shaderProgram, "tileCount");
+    shaderProgram.skipCount = gl.getUniformLocation(shaderProgram, "skipCount");
     shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
     shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
 }
