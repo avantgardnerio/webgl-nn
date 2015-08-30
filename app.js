@@ -132,7 +132,11 @@ function draw2D(pixels) {
     var sh = 500;
     var img = ctx.createImageData(w, h);
 
-    shaderSpec.uniforms = {uSampler: [pixels, IMG_WIDTH, IMG_HEIGHT]};
+    shaderSpec.uniforms = {
+        uSampler: [pixels, IMG_WIDTH, IMG_HEIGHT],
+        sourceSize: 29.0,
+        destinationSize: 13.0
+    };
     shaderSpec.varyings = {};
     for (var x = 0; x <= sw; x++) {
         for (var y = 0; y <= sh; y++) {
@@ -187,7 +191,10 @@ function drawScene(texture, fbo) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
+
+    // Upload constants
     gl.uniform1f(shaderProgram.sourceSize, 29.0);
+    gl.uniform1f(shaderProgram.destinationSize, 13.0);
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeVertexPositionBuffer.numItems / 2);
 
@@ -216,6 +223,7 @@ function initShaders() {
 
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
     shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
+    shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
 }
 
 function initTexture() {

@@ -20,8 +20,6 @@ BlurShader.prototype.VertexPosition = function (builtIns) {
 BlurShader.prototype.FragmentColor = function (builtIns) {
     var val = [0, 0, 0, 0];
 
-    var src_sz = 29.0;                      // Size of the source texture / layer / feature map
-    var dst_sz = 13.0;                      // Size of the destination texture / layer / feature map
     var scale = 3.0;                        // How many patterns are tiled on the output
     var skip = 2.0;                         // Skip every other row & column
     var halfSize = 2.0;                     // "half" the kernel size
@@ -32,8 +30,8 @@ BlurShader.prototype.FragmentColor = function (builtIns) {
     var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * scale, 1.0);
 
     // Round down into integer land [0,12]
-    var dx = Math.floor(fmx * dst_sz);
-    var dy = Math.floor(fmy * dst_sz);
+    var dx = Math.floor(fmx * this.uniforms.destinationSize);
+    var dy = Math.floor(fmy * this.uniforms.destinationSize);
 
     // floor((m - 5) / 2) + 1
     // 29 - 5 = 24 / 2 = 12 + 1 = 13 possible positions for the kernel within the source texture
