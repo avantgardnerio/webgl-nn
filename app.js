@@ -18,12 +18,15 @@ var shaderProgram;
 var floatTexture;
 var vertexBuffer;
 
+function createTestPattern() {
+
+}
+
 function webGLStart() {
-    var pixels;
     var testPatternButton = document.getElementById('test_pattern');
     testPatternButton.addEventListener('click', function (e) {
         // Test stripes for alignment
-        pixels = new Float32Array(IMG_HEIGHT * IMG_WIDTH * 4);
+        var pixels = new Float32Array(IMG_HEIGHT * IMG_WIDTH * 4);
         var pixIdx = 0;
         for (var y = 0; y < IMG_HEIGHT; y++) {
             for (var x = 0; x < IMG_WIDTH; x++) {
@@ -69,7 +72,7 @@ function webGLStart() {
                 console.log("rowCount=" + rowCount);
                 console.log("colCount=" + colCount);
                 srcImgbytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
-                pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
+                var pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
                 var pixIdx = 0;
 
                 var imgByteSize = rowCount * colCount;
