@@ -24,7 +24,7 @@ function webGLStart() {
     testPatternButton.addEventListener('click', function (e) {
         // Test stripes for alignment
         pixels = new Float32Array(IMG_HEIGHT * IMG_WIDTH * 4);
-        pixIdx = 0;
+        var pixIdx = 0;
         for (var y = 0; y < IMG_HEIGHT; y++) {
             for (var x = 0; x < IMG_WIDTH; x++) {
                 var color = 0.0;
@@ -291,11 +291,11 @@ function createTexture(floatAr, width, height) {
 function initBuffers() {
     cubeVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    vertices = [
+    var vertices = [
         -1.0, -1.0,
         1.0, -1.0,
         -1.0, 1.0,
-        1.0, 1.0,
+        1.0, 1.0
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     cubeVertexPositionBuffer.itemSize = 2;
