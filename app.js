@@ -16,7 +16,7 @@ var height = 39;
 var gl;
 var shaderProgram;
 var floatTexture;
-var cubeVertexPositionBuffer;
+var vertexBuffer;
 
 function webGLStart() {
     var pixels;
@@ -113,7 +113,7 @@ function webGLStart() {
     var canvas = document.getElementById("lesson05-canvas");
     initGL(canvas);
     initShaders();
-    initBuffers();
+    vertexBuffer = createSquareVertexBuffer();
     initTexture();
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -187,9 +187,6 @@ function drawScene(texture, fbo) {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
@@ -200,7 +197,9 @@ function drawScene(texture, fbo) {
     gl.uniform1f(shaderProgram.sourceSize, 29.0);
     gl.uniform1f(shaderProgram.destinationSize, 13.0);
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeVertexPositionBuffer.numItems / 2);
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexBuffer.numItems / 2);
 
     // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
     if (fbo) {
@@ -288,18 +287,20 @@ function createTexture(floatAr, width, height) {
     return tex;
 }
 
-function initBuffers() {
-    cubeVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    var vertices = [
+function createSquareVertexBuffer() {
+    var vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    var vertAr = [
         -1.0, -1.0,
         1.0, -1.0,
         -1.0, 1.0,
         1.0, 1.0
     ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    cubeVertexPositionBuffer.itemSize = 2;
-    cubeVertexPositionBuffer.numItems = vertices.length;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertAr), gl.STATIC_DRAW);
+    vertexBuffer.itemSize = 2;
+    vertexBuffer.numItems = vertAr.length;
+
+    return vertexBuffer;
 }
 
 module.exports = webGLStart;
