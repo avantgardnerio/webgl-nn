@@ -18,6 +18,65 @@ var shaderProgram;
 var floatTexture;
 var vertexBuffer;
 
+function loadIdxFile(arrayBuffer) {
+
+}
+
+function onFileLoaded(e) {
+    var dv = new DataView(e.target.result);
+    var pos = -4;
+    var magic = dv.getUint32(pos += 4);
+
+    // Image file
+    if (magic == 2051) {
+        var imageCount = dv.getUint32(pos += 4);
+        var rowCount = dv.getUint32(pos += 4);
+        var colCount = dv.getUint32(pos += 4);
+        console.log("imageCount=" + imageCount);
+        console.log("rowCount=" + rowCount);
+        console.log("colCount=" + colCount);
+        srcImgbytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
+        var pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
+        var pixIdx = 0;
+
+        var imgByteSize = rowCount * colCount;
+        for (var imgIdx = 0; imgIdx < imageCount; imgIdx++) {
+            for (var y = 0; y < IMG_HEIGHT; y++) {
+                for (var x = 0; x < IMG_WIDTH; x++) {
+                    var color = 0.0;
+                    if (y < rowCount && x < colCount) {
+                        color = dv.getUint8(pos + (imgIdx * imgByteSize) + (y * colCount) + x) / 255.0;
+                    }
+                    pixels[pixIdx + 0] = color;
+                    pixels[pixIdx + 1] = 0;
+                    pixels[pixIdx + 2] = 0;
+                    pixels[pixIdx + 3] = 1.0;
+                    pixIdx += 4;
+                }
+            }
+        }
+
+        draw2D(pixels);
+        var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
+        //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+        //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
+        drawScene(tex, false);
+        return;
+    }
+
+    // Label file
+    if (magic == 2049) {
+        var lblCnt = dv.getUint32(pos += 4);
+        for (var lblIdx = 0; lblIdx < lblCnt; lblIdx++) {
+            var lbl = dv.getUint8(pos + lblIdx);
+            console.log("lbl=" + lbl);
+        }
+        return;
+    }
+
+    throw "Unknown magic value: " + magic;
+}
+
 function webGLStart() {
     document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
 
@@ -25,61 +84,8 @@ function webGLStart() {
     var fileInput = document.getElementById('fileInput');
     fileInput.addEventListener('change', function (e) {
         var file = fileInput.files[0];
-
         var reader = new FileReader();
-
-        reader.onload = function (e) {
-            var dv = new DataView(reader.result);
-            var pos = -4;
-            var magic = dv.getUint32(pos += 4);
-            console.log("magic=" + magic);
-
-            // Image file
-            if (magic == 2051) {
-                var imageCount = dv.getUint32(pos += 4);
-                var rowCount = dv.getUint32(pos += 4);
-                var colCount = dv.getUint32(pos += 4);
-                console.log("imageCount=" + imageCount);
-                console.log("rowCount=" + rowCount);
-                console.log("colCount=" + colCount);
-                srcImgbytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
-                var pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
-                var pixIdx = 0;
-
-                var imgByteSize = rowCount * colCount;
-                for (var imgIdx = 0; imgIdx < imageCount; imgIdx++) {
-                    for (var y = 0; y < IMG_HEIGHT; y++) {
-                        for (var x = 0; x < IMG_WIDTH; x++) {
-                            var color = 0.0;
-                            if (y < rowCount && x < colCount) {
-                                color = dv.getUint8(pos + (imgIdx * imgByteSize) + (y * colCount) + x) / 255.0;
-                            }
-                            pixels[pixIdx + 0] = color;
-                            pixels[pixIdx + 1] = 0;
-                            pixels[pixIdx + 2] = 0;
-                            pixels[pixIdx + 3] = 1.0;
-                            pixIdx += 4;
-                        }
-                    }
-                }
-
-                draw2D(pixels);
-                var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
-                //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-                //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
-                drawScene(tex, false);
-            }
-
-            // Label file
-            if (magic == 2049) {
-                var lblCnt = dv.getUint32(pos += 4);
-                for (var lblIdx = 0; lblIdx < lblCnt; lblIdx++) {
-                    var lbl = dv.getUint8(pos + lblIdx);
-                    console.log("lbl=" + lbl);
-                }
-            }
-        }
-
+        reader.onload = onFileLoaded;
         reader.readAsArrayBuffer(file);
     });
 
