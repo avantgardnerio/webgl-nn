@@ -135,7 +135,8 @@ function draw2D(pixels) {
     shaderSpec.uniforms = {
         uSampler: [pixels, IMG_WIDTH, IMG_HEIGHT],
         sourceSize: 29.0,
-        destinationSize: 13.0
+        destinationSize: 13.0,
+        tileCount: 3
     };
     shaderSpec.varyings = {};
     for (var x = 0; x <= sw; x++) {
@@ -193,6 +194,7 @@ function drawScene(texture, fbo) {
     gl.uniform1i(shaderProgram.samplerUniform, 0);
 
     // Upload constants
+    gl.uniform1f(shaderProgram.tileCount, 3.0);
     gl.uniform1f(shaderProgram.sourceSize, 29.0);
     gl.uniform1f(shaderProgram.destinationSize, 13.0);
 
@@ -222,6 +224,8 @@ function initShaders() {
     gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
     shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+
+    shaderProgram.tileCount = gl.getUniformLocation(shaderProgram, "tileCount");
     shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
     shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
 }
@@ -237,7 +241,6 @@ function initTexture() {
         ar[i * 4 + 2] = 1;
         ar[i * 4 + 3] = 1;
     }
-
 
     draw2D(ar);
     // Upload texture to GPU

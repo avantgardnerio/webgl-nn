@@ -20,14 +20,13 @@ BlurShader.prototype.VertexPosition = function (builtIns) {
 BlurShader.prototype.FragmentColor = function (builtIns) {
     var val = [0, 0, 0, 0];
 
-    var scale = 3.0;                        // How many patterns are tiled on the output
     var skip = 2.0;                         // Skip every other row & column
     var halfSize = 2.0;                     // "half" the kernel size
     var kernel_sz = halfSize * 2.0 + 1.0;   // Full kernel size
 
     // Three tiles of output per one pass over the input [0,1)
-    var fmx = builtIns.mod(this.varyings.vTextureCoord[0] * scale, 1.0);
-    var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * scale, 1.0);
+    var fmx = builtIns.mod(this.varyings.vTextureCoord[0] * this.uniforms.tileCount, 1.0);
+    var fmy = builtIns.mod(this.varyings.vTextureCoord[1] * this.uniforms.tileCount, 1.0);
 
     // Round down into integer land [0,12]
     var dx = Math.floor(fmx * this.uniforms.destinationSize);
