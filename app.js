@@ -197,9 +197,7 @@ function drawScene(texture, fbo) {
     gl.uniform1f(shaderProgram.sourceSize, 29.0);
     gl.uniform1f(shaderProgram.destinationSize, 13.0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexBuffer.numItems / 2);
+    drawVertexBuffer(shaderProgram.vertexPositionAttribute, vertexBuffer);
 
     // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
     if (fbo) {
@@ -207,6 +205,12 @@ function drawScene(texture, fbo) {
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
         console.log(pixels[0] + "," + pixels[1] + "," + pixels[2] + "," + pixels[3]);
     }
+}
+
+function drawVertexBuffer(vertPosAttr, vertBuff) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuff);
+    gl.vertexAttribPointer(vertPosAttr, vertBuff.itemSize, gl.FLOAT, false, 0, 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertBuff.numItems / 2);
 }
 
 function initShaders() {
