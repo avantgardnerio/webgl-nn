@@ -1,4 +1,5 @@
 var BlurWrapper = require('./BlurWrapper');
+var Texture = require('./Texture');
 var IdxFileReader = require('./IdxFileReader');
 var TestPattern = require('./TestPattern');
 var UnitVertexBuffer = require('./UnitVertexBuffer');
@@ -29,7 +30,7 @@ function webGLStart() {
 
 function onTestPatternClick() {
     var pattern = new TestPattern();
-    var tex = createTexture(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    var tex = new Texture(gl, pattern.getWidth(), pattern.getHeight(), pattern.getPixels());
     drawScene(tex, false);
     draw2D(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
 
@@ -49,9 +50,7 @@ function onFileLoaded(e) {
     var file = reader.loadFile(dv);
     var pixels = file.getImage(0);//file.getImageCount()-1);
 
-    var tex = createTexture(pixels, file.getWidth(), file.getHeight());
-    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-    //replaceTexture(tex, tmp, file.getWidth(), file.getHeight());
+    var tex = new Texture(gl, file.getWidth(), file.getHeight(), pixels);
 
     drawScene(tex, false);
     draw2D(pixels, file.getWidth(), file.getHeight());
@@ -95,18 +94,12 @@ function drawScene(texture, fbo) {
     // Optionally render to frame buffer
     if (fbo) {
         // Create output texture
-        var texture = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, null);
+        var tex = new Texture(gl, width, height);
 
         // Create and attach frame buffer
         var fbo = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex.getId(), 0);
         gl.bindTexture(gl.TEXTURE_2D, null);
         if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
             throw new Error("gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE");
@@ -118,7 +111,7 @@ function drawScene(texture, fbo) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.bindTexture(gl.TEXTURE_2D, texture.getId());
 
     // Upload constants
     shader.setSamplerUniform(0);
@@ -136,45 +129,6 @@ function drawScene(texture, fbo) {
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
         console.log(pixels[0] + "," + pixels[1] + "," + pixels[2] + "," + pixels[3]);
     }
-}
-
-function replaceTexture(tex, floatAr, width, height) {
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 	// target - Specifies the target texture
-        0, 							// level - The level of detail value.
-        gl.RGBA, 					// internalformat - Specifies the number of color components in the texture.
-        width, 						// width - Width of texture image. Value used only when UInt8Array or Float32Array for pixels is specified.
-        height, 					// height - Height of texture image. Value used only when UInt8Array or Float32Array for pixels is specified.
-        0, 							// border - Specifies the width of the border. Must be 0.
-        gl.RGBA, 					// format - Contains the format for the source pixel data. Must match internalformat (see above).
-        gl.FLOAT,					// type - The type of texture data. (gl.FLOAT creates 128 bit-per-pixel textures instead of 32 bit-per-pixel for the image)
-        floatAr						// pixels - The ImageData array, ArrayBufferView, HTMLCanvasElement, HTMLImageElement to use as a data source for the texture.
-    );
-    gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
-// TODO: Texture manage that can avoid reallocating textures all the time
-function createTexture(floatAr, width, height) {
-    var tex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 	// target - Specifies the target texture
-        0, 							// level - The level of detail value.
-        gl.RGBA, 					// internalformat - Specifies the number of color components in the texture.
-        width, 						// width - Width of texture image. Value used only when UInt8Array or Float32Array for pixels is specified.
-        height, 					// height - Height of texture image. Value used only when UInt8Array or Float32Array for pixels is specified.
-        0, 							// border - Specifies the width of the border. Must be 0.
-        gl.RGBA, 					// format - Contains the format for the source pixel data. Must match internalformat (see above).
-        gl.FLOAT,					// type - The type of texture data. (gl.FLOAT creates 128 bit-per-pixel textures instead of 32 bit-per-pixel for the image)
-        floatAr						// pixels - The ImageData array, ArrayBufferView, HTMLCanvasElement, HTMLImageElement to use as a data source for the texture.
-    );
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-
-    return tex;
 }
 
 module.exports = webGLStart;
