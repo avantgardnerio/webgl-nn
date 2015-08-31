@@ -106,12 +106,12 @@ function drawScene(texture, fbo) {
         }
     }
 
-    // Draw the scene
+    // Init the scene
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture.getId());
+    // Set the texture
+    texture.activate(gl.TEXTURE0);
 
     // Upload constants
     shader.setSamplerUniform(0);

@@ -24,6 +24,11 @@ function Texture(gl, width, height, floatAr) {
         return tex;
     };
 
+    self.activate = function(dst) {
+        gl.activeTexture(dst);
+        gl.bindTexture(gl.TEXTURE_2D, self.getId());
+    };
+
     return self;
 }
 
