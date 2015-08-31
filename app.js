@@ -47,18 +47,18 @@ function onTestPatternClick() {
     putImageData(pattern.getPixels(), 500, 0, 29);
 
     // 13x13
-    var img3d = renderer3d.render(gl, pattern.getPixels(), 29, 39, 3);
-    var img2d = renderer2d.render(gl, pattern.getPixels(), 29, 39, 3);
+    var img3d = renderer3d.render(gl, pattern.getPixels(), 29, 13, 3);
+    var img2d = renderer2d.render(gl, pattern.getPixels(), 29, 13, 3);
 
-    putImageData(img3d, 40, 0, 39);
-    putImageData(img2d, 540, 0, 39);
+    putImageData(img3d, 40, 0, 13 * 3);
+    putImageData(img2d, 540, 0, 13 * 3);
 
     // 5x5
     img3d = renderer3d.render(gl, img3d, 13, 5, 7);
     img2d = renderer2d.render(gl, img2d, 13, 5, 7);
 
-    putImageData(img3d, 80, 0, 35);
-    putImageData(img2d, 580, 0, 35);
+    putImageData(img3d, 80, 0, 5 * 7);
+    putImageData(img2d, 580, 0, 5 * 7);
 }
 
 function putImageData(rgba, dx, dy, size) {

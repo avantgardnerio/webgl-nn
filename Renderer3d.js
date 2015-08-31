@@ -5,8 +5,9 @@ var Renderer3d = function(shader, vertexBuffer) {
     var self = {};
 
     self.render = function(gl, srcPixels, srcSize, dstSize, tileCount) {
+        var outSize = dstSize * tileCount;
         var srcTex = new Texture(gl, srcSize, srcSize, srcPixels);
-        var dstTex = new Texture(gl, dstSize, dstSize);
+        var dstTex = new Texture(gl, outSize, outSize);
 
         // Create and attach frame buffer
         var fbo = gl.createFramebuffer();
@@ -18,7 +19,7 @@ var Renderer3d = function(shader, vertexBuffer) {
         }
 
         // Init the scene
-        gl.viewport(0, 0, dstSize, dstSize);
+        gl.viewport(0, 0, outSize, outSize);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // Set the texture
@@ -35,8 +36,8 @@ var Renderer3d = function(shader, vertexBuffer) {
         vertexBuffer.draw(shader.getVertPosAttr());
 
         // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
-        var dstPixels = new Float32Array(dstSize * dstSize * 4);
-        gl.readPixels(0, 0, dstSize, dstSize, gl.RGBA, gl.FLOAT, dstPixels);
+        var dstPixels = new Float32Array(outSize * outSize * 4);
+        gl.readPixels(0, 0, outSize, outSize, gl.RGBA, gl.FLOAT, dstPixels);
         return dstPixels;
     };
 
