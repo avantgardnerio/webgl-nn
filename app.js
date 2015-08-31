@@ -7,9 +7,9 @@ var shaderSpec = new BlurShader();
 
 var width = 39;
 var height = 39;
+var canvas;
 var gl;
 var shaderProgram;
-var floatTexture;
 var vertexBuffer;
 
 function webGLStart() {
@@ -17,10 +17,10 @@ function webGLStart() {
     // Hook up events
     document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
     document.getElementById('fileInput').addEventListener('change', onFileOpenClick);
+    canvas = document.getElementById("lesson05-canvas");
+    gl = canvas.getContext("experimental-webgl");
 
     // WebGL
-    var canvas = document.getElementById("lesson05-canvas");
-    initGL(canvas);
     initShaders();
     vertexBuffer = createSquareVertexBuffer();
 
@@ -93,12 +93,6 @@ function draw2D(pixels, width, height) {
     ctx.putImageData(img, 0, 0);
 }
 
-function initGL(canvas) {
-    gl = canvas.getContext("experimental-webgl");
-    gl.viewportWidth = canvas.width;
-    gl.viewportHeight = canvas.height;
-}
-
 function drawScene(texture, fbo) {
 
     // Optionally render to frame buffer
@@ -123,7 +117,7 @@ function drawScene(texture, fbo) {
     }
 
     // Draw the scene
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     gl.activeTexture(gl.TEXTURE0);
