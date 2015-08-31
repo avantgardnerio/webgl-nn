@@ -36,12 +36,18 @@ function webGLStart() {
 }
 
 function onTestPatternClick() {
+    // 29x29
     var pattern = new TestPattern();
+    putImageData(pattern.getPixels(), 0, 0, 29, 29);
+    putImageData(pattern.getPixels(), 500, 0, 29, 29);
+
+    // 13x13
     var tex = new Texture(gl, pattern.getWidth(), pattern.getHeight(), pattern.getPixels());
     draw3d(tex, false);
-    var img2d = draw2d(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    var img2d = draw2d(pattern.getPixels(), 29, 13);
 
-    putImageData(img2d, 500, 0, pattern.getWidth(), pattern.getHeight());
+    //putImageData(pattern.getPixels(), 0, 0, pattern.getWidth(), pattern.getHeight());
+    putImageData(img2d, 530, 0, 13, 13);
 
     // TODO: Read 13x13 output, then render down to 5x5
 }
@@ -78,22 +84,22 @@ function onFileLoaded(e) {
     draw2d(pixels, file.getWidth(), file.getHeight());
 }
 
-function draw2d(pixels, width, height) {
-    var img = new Float32Array(width * height * 4);
+function draw2d(pixels, srcSize, dstSize) {
+    var img = new Float32Array(dstSize * dstSize * 4);
     shader.setUniforms({
-        uSampler: [pixels, width, height],
-        sourceSize: 29.0,
-        destinationSize: 13.0,
+        uSampler: [pixels, srcSize, srcSize],
+        sourceSize: srcSize,
+        destinationSize: dstSize,
         tileCount: 3.0,
         skipCount: 2.0
     });
     var varyings = {};
-    for (var y = 0; y < height; y++) {
-        for (var x = 0; x < width; x++) {
-            varyings.vTextureCoord = [x / width, y / height];
+    for (var y = 0; y < dstSize; y++) {
+        for (var x = 0; x < dstSize; x++) {
+            varyings.vTextureCoord = [x / dstSize, y / dstSize];
             shader.setVaryings(varyings);
             var rgba = shader.FragmentColor(js2glsl.builtIns);
-            var idx = y * width * 4 + x * 4;
+            var idx = y * dstSize * 4 + x * 4;
             for (var c = 0; c < 4; c++) {
                 img[idx + c] = rgba[c];
             }
