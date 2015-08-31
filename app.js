@@ -1,16 +1,15 @@
-var BlurShader = require('./BlurShader');
+var BlurWrapper = require('./BlurWrapper');
 var IdxFileReader = require('./IdxFileReader');
 var TestPattern = require('./TestPattern');
 var UnitVertexBuffer = require('./UnitVertexBuffer');
 var js2glsl = require("js2glsl");
 
-var shaderSpec = new BlurShader();
+var shader;
 
 var width = 39;
 var height = 39;
 var canvas;
 var gl;
-var shaderProgram;
 var vertexBuffer;
 
 function webGLStart() {
@@ -24,32 +23,8 @@ function webGLStart() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     // WebGL
-    initShaders();
+    shader = new BlurWrapper(gl);
     vertexBuffer = new UnitVertexBuffer(gl);
-}
-
-// TODO: Refactor and kill
-function initShaders() {
-    shaderProgram = shaderSpec.GetProgram(gl)
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-
-    gl.useProgram(shaderProgram);
-
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-
-    shaderProgram.tileCount = gl.getUniformLocation(shaderProgram, "tileCount");
-    shaderProgram.skipCount = gl.getUniformLocation(shaderProgram, "skipCount");
-    shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
-    shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
 }
 
 function onTestPatternClick() {
@@ -92,18 +67,19 @@ function draw2D(pixels, width, height) {
     var sh = 500;
     var img = ctx.createImageData(w, h);
 
-    shaderSpec.uniforms = {
+    shader.setUniforms({
         uSampler: [pixels, width, height],
         sourceSize: 29.0,
         destinationSize: 13.0,
         tileCount: 3.0,
         skipCount: 2.0
-    };
-    shaderSpec.varyings = {};
+    });
+    var varyings = {};
     for (var x = 0; x <= sw; x++) {
         for (var y = 0; y <= sh; y++) {
-            shaderSpec.varyings.vTextureCoord = [x / w, y / h];
-            var rgba = shaderSpec.FragmentColor(js2glsl.builtIns);
+            varyings.vTextureCoord = [x / w, y / h];
+            shader.setVaryings(varyings);
+            var rgba = shader.FragmentColor(js2glsl.builtIns);
             var idx = (x + (h - y - 1) * w) * 4;
             for (var c = 0; c < 4; c++) {
                 img.data[idx + c] = Math.round(Math.max(0, Math.min(255, rgba[c] * 255)));
@@ -143,15 +119,16 @@ function drawScene(texture, fbo) {
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(shaderProgram.samplerUniform, 0);
 
     // Upload constants
-    gl.uniform1f(shaderProgram.tileCount, 3.0);
-    gl.uniform1f(shaderProgram.skipCount, 2.0);
-    gl.uniform1f(shaderProgram.sourceSize, 29.0);
-    gl.uniform1f(shaderProgram.destinationSize, 13.0);
+    shader.setSamplerUniform(0);
+    shader.setTileCount(3.0);
+    shader.setSkipCount(2.0);
+    shader.setSourceSize(29.0);
+    shader.setDestSize(13.0);
 
-    vertexBuffer.draw(shaderProgram.vertexPositionAttribute);
+    // Render
+    vertexBuffer.draw(shader.getVertPosAttr());
 
     // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
     if (fbo) {
