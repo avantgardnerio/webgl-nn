@@ -9,7 +9,7 @@ var shader;
 
 var width = 39;
 var height = 39;
-var canvas;
+var cnv3d;
 var gl;
 var vertexBuffer;
 var cnvOut;
@@ -29,8 +29,8 @@ function webGLStart() {
     cnvOut = document.getElementById("cnvOut");
     ctxOut = cnvOut.getContext("2d");
 
-    canvas = document.getElementById("lesson05-canvas");
-    gl = canvas.getContext("experimental-webgl");
+    cnv3d = document.getElementById("cnv3d");
+    gl = cnv3d.getContext("experimental-webgl");
 
     gl.getExtension('OES_texture_float');
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -119,7 +119,7 @@ function draw3d(texture, fbo) {
     }
 
     // Init the scene
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.viewport(0, 0, cnv3d.width, cnv3d.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Set the texture
