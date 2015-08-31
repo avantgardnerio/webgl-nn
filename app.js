@@ -1,6 +1,7 @@
 var BlurShader = require('./BlurShader');
 var IdxFileReader = require('./IdxFileReader');
 var TestPattern = require('./TestPattern');
+var UnitVertexBuffer = require('./UnitVertexBuffer');
 var js2glsl = require("js2glsl");
 
 var shaderSpec = new BlurShader();
@@ -22,7 +23,7 @@ function webGLStart() {
 
     // WebGL
     initShaders();
-    vertexBuffer = createSquareVertexBuffer();
+    vertexBuffer = new UnitVertexBuffer(gl);
 
     gl.getExtension('OES_texture_float');
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -151,7 +152,7 @@ function drawScene(texture, fbo) {
     gl.uniform1f(shaderProgram.sourceSize, 29.0);
     gl.uniform1f(shaderProgram.destinationSize, 13.0);
 
-    drawVertexBuffer(shaderProgram.vertexPositionAttribute, vertexBuffer);
+    vertexBuffer.draw(shaderProgram.vertexPositionAttribute);
 
     // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
     if (fbo) {
@@ -159,12 +160,6 @@ function drawScene(texture, fbo) {
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
         console.log(pixels[0] + "," + pixels[1] + "," + pixels[2] + "," + pixels[3]);
     }
-}
-
-function drawVertexBuffer(vertPosAttr, vertBuff) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuff);
-    gl.vertexAttribPointer(vertPosAttr, vertBuff.itemSize, gl.FLOAT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertBuff.numItems / 2);
 }
 
 function replaceTexture(tex, floatAr, width, height) {
@@ -204,27 +199,6 @@ function createTexture(floatAr, width, height) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 
     return tex;
-}
-
-/**
- * Create a unit square vertex buffer to draw a texture on
- *
- * @returns {VertexBuffer} Unit square
- */
-function createSquareVertexBuffer() {
-    var vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    var vertAr = [
-        -1.0, -1.0,
-        1.0, -1.0,
-        -1.0, 1.0,
-        1.0, 1.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertAr), gl.STATIC_DRAW);
-    vertexBuffer.itemSize = 2;
-    vertexBuffer.numItems = vertAr.length;
-
-    return vertexBuffer;
 }
 
 module.exports = webGLStart;
