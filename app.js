@@ -23,7 +23,9 @@ function webGLStart() {
     document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
     document.getElementById('fileInput').addEventListener('change', onFileOpenClick);
 
-    cnv2d = document.getElementById("cnv2d");
+    cnv2d = document.createElement("canvas");
+    cnv2d.width = 500;
+    cnv2d.height = 500;
     ctx2d = cnv2d.getContext("2d");
 
     cnvOut = document.getElementById("cnvOut");
