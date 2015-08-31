@@ -12,14 +12,21 @@ var height = 39;
 var canvas;
 var gl;
 var vertexBuffer;
+var cnvOut;
+var ctxOut;
 
 function webGLStart() {
 
     // Hook up events
     document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
     document.getElementById('fileInput').addEventListener('change', onFileOpenClick);
+
+    cnvOut = document.getElementById("cnvOut");
+    ctxOut = cnvOut.getContext("2d");
+
     canvas = document.getElementById("lesson05-canvas");
     gl = canvas.getContext("experimental-webgl");
+
     gl.getExtension('OES_texture_float');
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -32,7 +39,9 @@ function onTestPatternClick() {
     var pattern = new TestPattern();
     var tex = new Texture(gl, pattern.getWidth(), pattern.getHeight(), pattern.getPixels());
     draw3d(tex, false);
-    draw2d(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    var img2d = draw2d(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+
+    ctxOut.putImageData(img2d, 500, 0);
 
     // TODO: Read 13x13 output, then render down to 5x5
 }
@@ -87,6 +96,7 @@ function draw2d(pixels, width, height) {
         }
     }
     ctx.putImageData(img, 0, 0);
+    return img;
 }
 
 function draw3d(texture, fbo) {
