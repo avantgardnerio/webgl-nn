@@ -20,13 +20,12 @@ function webGLStart() {
     document.getElementById('fileInput').addEventListener('change', onFileOpenClick);
     canvas = document.getElementById("lesson05-canvas");
     gl = canvas.getContext("experimental-webgl");
+    gl.getExtension('OES_texture_float');
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     // WebGL
     initShaders();
     vertexBuffer = new UnitVertexBuffer(gl);
-
-    gl.getExtension('OES_texture_float');
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
 }
 
 // TODO: Refactor and kill
