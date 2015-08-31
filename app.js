@@ -1,12 +1,9 @@
 var BlurShader = require('./BlurShader');
 var IdxFileReader = require('./IdxFileReader');
+var TestPattern = require('./TestPattern');
 var js2glsl = require("js2glsl");
 
 var shaderSpec = new BlurShader();
-
-
-var IMG_WIDTH = 29;
-var IMG_HEIGHT = 29;
 
 var width = 39;
 var height = 39;
@@ -14,25 +11,6 @@ var gl;
 var shaderProgram;
 var floatTexture;
 var vertexBuffer;
-
-function onFileLoaded(e) {
-    var dv = new DataView(e.target.result);
-    var reader = new IdxFileReader();
-    var file = reader.loadFile(dv);
-    var pixels = file.getImage(0);//file.getImageCount()-1);
-    draw2D(pixels);
-    var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
-    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-    //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
-    drawScene(tex, false);
-}
-
-function onFileOpenClick(e) {
-    var file = e.target.files[0];
-    var reader = new FileReader();
-    reader.onload = onFileLoaded;
-    reader.readAsArrayBuffer(file);
-}
 
 function webGLStart() {
 
@@ -45,17 +23,47 @@ function webGLStart() {
     initGL(canvas);
     initShaders();
     vertexBuffer = createSquareVertexBuffer();
-    initTexture();
 
+    gl.getExtension('OES_texture_float');
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
-    drawScene(floatTexture, false);
-
 }
 
-function draw2D(pixels) {
+function onFileOpenClick(e) {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+    reader.onload = onFileLoaded;
+    reader.readAsArrayBuffer(file);
+}
+
+function onFileLoaded(e) {
+    var dv = new DataView(e.target.result);
+    var reader = new IdxFileReader();
+    var file = reader.loadFile(dv);
+    var pixels = file.getImage(0);//file.getImageCount()-1);
+
+    var tex = createTexture(pixels, file.getWidth(), file.getHeight());
+    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+    //replaceTexture(tex, tmp, file.getWidth(), file.getHeight());
+
+    drawScene(tex, false);
+    draw2D(pixels, file.getWidth(), file.getHeight());
+}
+
+/**
+ * Generate a test pattern and draw it in 2d & 3d
+ */
+function onTestPatternClick() {
+    var pattern = new TestPattern();
+    draw2D(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    var tex = createTexture(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+    //replaceTexture(tex, tmp, pattern.getWidth(), pattern.getHeight());
+    drawScene(tex, false);
+}
+
+function draw2D(pixels, width, height) {
     var canvas2d = document.getElementById("2d");
-    ctx = canvas2d.getContext("2d");
+    var ctx = canvas2d.getContext("2d");
 
     var w = canvas2d.width;
     var h = canvas2d.height;
@@ -64,7 +72,7 @@ function draw2D(pixels) {
     var img = ctx.createImageData(w, h);
 
     shaderSpec.uniforms = {
-        uSampler: [pixels, IMG_WIDTH, IMG_HEIGHT],
+        uSampler: [pixels, width, height],
         sourceSize: 29.0,
         destinationSize: 13.0,
         tileCount: 3.0,
@@ -167,23 +175,6 @@ function initShaders() {
     shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
 }
 
-function initTexture() {
-    gl.getExtension('OES_texture_float');
-
-    // Draw texture
-    var ar = new Float32Array(width * height * 4);
-    for (var i = 0; i < width * height; i++) {
-        ar[i * 4 + 0] = 0.5;
-        ar[i * 4 + 1] = 0.5;
-        ar[i * 4 + 2] = 1;
-        ar[i * 4 + 3] = 1;
-    }
-
-    draw2D(ar);
-    // Upload texture to GPU
-    floatTexture = createTexture(ar, width, height);
-}
-
 function replaceTexture(tex, floatAr, width, height) {
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 	// target - Specifies the target texture
@@ -223,18 +214,6 @@ function createTexture(floatAr, width, height) {
 }
 
 /**
- * Generate a test pattern and draw it in 2d & 3d
- */
-function onTestPatternClick() {
-    var pixels = createTestPattern();
-    draw2D(pixels);
-    var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
-    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-    //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
-    drawScene(tex, false);
-}
-
-/**
  * Create a unit square vertex buffer to draw a texture on
  *
  * @returns {VertexBuffer} Unit square
@@ -253,30 +232,6 @@ function createSquareVertexBuffer() {
     vertexBuffer.numItems = vertAr.length;
 
     return vertexBuffer;
-}
-
-/**
- * Generate test stripes for alignment
- *
- * @returns {Float32Array} test stripes for alignment
- */
-function createTestPattern() {
-    var pixels = new Float32Array(IMG_HEIGHT * IMG_WIDTH * 4);
-    var pixIdx = 0;
-    for (var y = 0; y < IMG_HEIGHT; y++) {
-        for (var x = 0; x < IMG_WIDTH; x++) {
-            var color = 0.0;
-            if (x < 5 || y < 5 || x >= IMG_WIDTH - 5 || y >= IMG_HEIGHT - 5) {
-                color = 1.0;
-            }
-            pixels[pixIdx + 0] = color;
-            pixels[pixIdx + 1] = color;
-            pixels[pixIdx + 2] = color;
-            pixels[pixIdx + 3] = 1.0;
-            pixIdx += 4;
-        }
-    }
-    return pixels;
 }
 
 module.exports = webGLStart;

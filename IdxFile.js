@@ -44,6 +44,14 @@ var IdxFile = function(dataView) {
         }
     };
 
+    self.getWidth = function() {
+        return IMG_WIDTH;
+    };
+
+    self.getHeight = function() {
+        return IMG_HEIGHT;
+    };
+
     self.getImage = function(imgIdx) {
         return new Float32Array(bytes, BYTE_SIZE * imgIdx, FLOAT_SIZE);
     };
