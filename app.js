@@ -14,19 +14,12 @@ var gl;
 var vertexBuffer;
 var cnvOut;
 var ctxOut;
-var cnv2d;
-var ctx2d;
 
 function webGLStart() {
 
     // Hook up events
     document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
     document.getElementById('fileInput').addEventListener('change', onFileOpenClick);
-
-    cnv2d = document.createElement("canvas");
-    cnv2d.width = 500;
-    cnv2d.height = 500;
-    ctx2d = cnv2d.getContext("2d");
 
     cnvOut = document.getElementById("cnvOut");
     ctxOut = cnvOut.getContext("2d");
