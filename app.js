@@ -74,8 +74,8 @@ function loadImages(dataView) {
                     color = dataView.getUint8(pos + (imgIdx * imgByteSize) + (y * colCount) + x) / 255.0;
                 }
                 pixels[pixIdx + 0] = color;
-                pixels[pixIdx + 1] = 0;
-                pixels[pixIdx + 2] = 0;
+                pixels[pixIdx + 1] = color;
+                pixels[pixIdx + 2] = color;
                 pixels[pixIdx + 3] = 1.0;
                 pixIdx += 4;
             }
