@@ -50,10 +50,15 @@ function onTestPatternClick() {
     var img3d = renderer3d.render(gl, pattern.getPixels(), 29, 13);
     var img2d = renderer2d.render(gl, pattern.getPixels(), 29, 13);
 
-    putImageData(img3d, 30, 0, 13, 13);
-    putImageData(img2d, 530, 0, 13, 13);
+    putImageData(img3d, 30, 8, 13, 13);
+    putImageData(img2d, 530, 8, 13, 13);
 
-    // TODO: Read 13x13 output, then render down to 5x5
+    // 5x5
+    img3d = renderer3d.render(gl, img3d, 13, 5);
+    img2d = renderer2d.render(gl, img2d, 13, 5);
+
+    putImageData(img3d, 50, 12, 5, 5);
+    putImageData(img2d, 550, 12, 5, 5);
 }
 
 function putImageData(rgba, dx, dy, width, height) {
