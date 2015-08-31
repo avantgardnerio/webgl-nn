@@ -18,16 +18,19 @@ var shaderProgram;
 var floatTexture;
 var vertexBuffer;
 
-function loadIdxFile(arrayBuffer) {
-
-}
-
 function loadIdxFile(dataView) {
     var magic = dataView.getUint32(0);
 
     // Image file
     if (magic == 2051) {
-        loadImages(dataView);
+        srcImgbytes = loadImages(dataView);
+        var imgCnt = getImageCount(srcImgbytes);
+        var pixels = getImage(srcImgbytes, imgCnt-1);
+        draw2D(pixels);
+        var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
+        //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
+        //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
+        drawScene(tex, false);
         return;
     }
 
@@ -44,13 +47,22 @@ function loadIdxFile(dataView) {
     throw "Unknown magic value: " + magic;
 }
 
+function getImage(imgArrayBytes, imgIdx) {
+    var tmp = new Float32Array(imgArrayBytes, IMG_BYTE_SZ * imgIdx, IMG_FLT_SZ);
+    return tmp;
+}
+
+function getImageCount(imgArrayBytes) {
+    return imgArrayBytes.byteLength / IMG_BYTE_SZ;
+}
+
 function loadImages(dataView) {
     var pos = 0;
     var imageCount = dataView.getUint32(pos += 4);
     var rowCount = dataView.getUint32(pos += 4);
     var colCount = dataView.getUint32(pos += 4);
-    srcImgbytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
-    var pixels = new Float32Array(srcImgbytes, 0, IMG_FLT_SZ * imageCount);
+    var bytes = new ArrayBuffer(IMG_BYTE_SZ * imageCount);
+    var pixels = new Float32Array(bytes, 0, IMG_FLT_SZ * imageCount);
     var pixIdx = 0;
 
     var imgByteSize = rowCount * colCount;
@@ -69,12 +81,7 @@ function loadImages(dataView) {
             }
         }
     }
-
-    draw2D(pixels);
-    var tex = createTexture(pixels, IMG_WIDTH, IMG_HEIGHT);
-    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-    //replaceTexture(tex, tmp, IMG_WIDTH, IMG_HEIGHT);
-    drawScene(tex, false);
+    return bytes;
 }
 
 function onFileLoaded(e) {
