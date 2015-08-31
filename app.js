@@ -28,6 +28,39 @@ function webGLStart() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 }
 
+// TODO: Refactor and kill
+function initShaders() {
+    shaderProgram = shaderSpec.GetProgram(gl)
+
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
+
+    gl.useProgram(shaderProgram);
+
+    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
+    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+
+    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+
+    shaderProgram.tileCount = gl.getUniformLocation(shaderProgram, "tileCount");
+    shaderProgram.skipCount = gl.getUniformLocation(shaderProgram, "skipCount");
+    shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
+    shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
+}
+
+function onTestPatternClick() {
+    var pattern = new TestPattern();
+    var tex = createTexture(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    drawScene(tex, false);
+    draw2D(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+
+    // TODO: Read 13x13 output, then render down to 5x5
+}
+
 function onFileOpenClick(e) {
     var file = e.target.files[0];
     var reader = new FileReader();
@@ -47,18 +80,6 @@ function onFileLoaded(e) {
 
     drawScene(tex, false);
     draw2D(pixels, file.getWidth(), file.getHeight());
-}
-
-/**
- * Generate a test pattern and draw it in 2d & 3d
- */
-function onTestPatternClick() {
-    var pattern = new TestPattern();
-    draw2D(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
-    var tex = createTexture(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
-    //var tmp = new Float32Array(srcImgbytes, IMG_BYTE_SZ * (imageCount-1), IMG_FLT_SZ);
-    //replaceTexture(tex, tmp, pattern.getWidth(), pattern.getHeight());
-    drawScene(tex, false);
 }
 
 function draw2D(pixels, width, height) {
@@ -146,29 +167,6 @@ function drawVertexBuffer(vertPosAttr, vertBuff) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertBuff.numItems / 2);
 }
 
-function initShaders() {
-    shaderProgram = shaderSpec.GetProgram(gl)
-
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-
-    gl.useProgram(shaderProgram);
-
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-
-    shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
-    gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
-
-    shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-
-    shaderProgram.tileCount = gl.getUniformLocation(shaderProgram, "tileCount");
-    shaderProgram.skipCount = gl.getUniformLocation(shaderProgram, "skipCount");
-    shaderProgram.sourceSize = gl.getUniformLocation(shaderProgram, "sourceSize");
-    shaderProgram.destinationSize = gl.getUniformLocation(shaderProgram, "destinationSize");
-}
-
 function replaceTexture(tex, floatAr, width, height) {
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 	// target - Specifies the target texture
@@ -184,6 +182,7 @@ function replaceTexture(tex, floatAr, width, height) {
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
+// TODO: Texture manage that can avoid reallocating textures all the time
 function createTexture(floatAr, width, height) {
     var tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
