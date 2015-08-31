@@ -3,15 +3,15 @@ var Texture = require('./Texture');
 var IdxFileReader = require('./IdxFileReader');
 var TestPattern = require('./TestPattern');
 var UnitVertexBuffer = require('./UnitVertexBuffer');
-var js2glsl = require("js2glsl");
+var Renderer2d = require('./Renderer2d');
 
 var shader;
-
 var cnv3d;
 var gl;
 var vertexBuffer;
 var cnvOut;
 var ctxOut;
+var renderer2d;
 
 function webGLStart() {
 
@@ -33,6 +33,8 @@ function webGLStart() {
     // WebGL
     shader = new BlurWrapper(gl);
     vertexBuffer = new UnitVertexBuffer(gl);
+
+    renderer2d = new Renderer2d(shader);
 }
 
 function onTestPatternClick() {
@@ -43,7 +45,7 @@ function onTestPatternClick() {
 
     // 13x13
     var img3d = draw3d(gl, pattern.getPixels(), 29, 13);
-    var img2d = draw2d(gl, pattern.getPixels(), 29, 13);
+    var img2d = renderer2d.render(gl, pattern.getPixels(), 29, 13);
 
     putImageData(img3d, 30, 0, 13, 13);
     putImageData(img2d, 530, 0, 13, 13);
@@ -81,30 +83,6 @@ function onFileLoaded(e) {
 
     draw3d(tex, false);
     draw2d(pixels, file.getWidth(), file.getHeight());
-}
-
-function draw2d(gl, pixels, srcSize, dstSize) {
-    var img = new Float32Array(dstSize * dstSize * 4);
-    shader.setUniforms({
-        uSampler: [pixels, srcSize, srcSize],
-        sourceSize: srcSize,
-        destinationSize: dstSize,
-        tileCount: 3.0,
-        skipCount: 2.0
-    });
-    var varyings = {};
-    for (var y = 0; y < dstSize; y++) {
-        for (var x = 0; x < dstSize; x++) {
-            varyings.vTextureCoord = [x / dstSize, y / dstSize];
-            shader.setVaryings(varyings);
-            var rgba = shader.FragmentColor(js2glsl.builtIns);
-            var idx = y * dstSize * 4 + x * 4;
-            for (var c = 0; c < 4; c++) {
-                img[idx + c] = rgba[c];
-            }
-        }
-    }
-    return img;
 }
 
 function draw3d(gl, srcPixels, srcSize, dstSize) {
