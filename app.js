@@ -48,9 +48,22 @@ function onTestPatternClick() {
     draw3d(tex, false);
     var img2d = draw2d(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
 
-    ctxOut.putImageData(img2d, 500, 0);
+    putImageData(img2d, 500, 0, pattern.getWidth(), pattern.getHeight());
 
     // TODO: Read 13x13 output, then render down to 5x5
+}
+
+function putImageData(rgba, dx, dy, width, height) {
+    var img = ctxOut.createImageData(width, height);
+    for(var y = 0; y < height; y++) {
+        for(var x = 0; x < width; x++) {
+            for(var c = 0; c < 4; c++) {
+                var idx = y * width * 4 + x * 4 + c;
+                img.data[idx] = Math.round(Math.max(0, Math.min(255, rgba[idx] * 255)));
+            }
+        }
+    }
+    ctxOut.putImageData(img, dx, dy);
 }
 
 function onFileOpenClick(e) {
@@ -73,12 +86,7 @@ function onFileLoaded(e) {
 }
 
 function draw2d(pixels, width, height) {
-    var w = cnv2d.width;
-    var h = cnv2d.height;
-    var sw = 500;
-    var sh = 500;
-    var img = ctx2d.createImageData(w, h);
-
+    var img = new Float32Array(width * height * 4);
     shader.setUniforms({
         uSampler: [pixels, width, height],
         sourceSize: 29.0,
@@ -87,19 +95,17 @@ function draw2d(pixels, width, height) {
         skipCount: 2.0
     });
     var varyings = {};
-    for (var x = 0; x <= sw; x++) {
-        for (var y = 0; y <= sh; y++) {
-            varyings.vTextureCoord = [x / w, y / h];
+    for (var y = 0; y < height; y++) {
+        for (var x = 0; x < width; x++) {
+            varyings.vTextureCoord = [x / width, y / height];
             shader.setVaryings(varyings);
             var rgba = shader.FragmentColor(js2glsl.builtIns);
-            var idx = (x + (h - y - 1) * w) * 4;
+            var idx = y * width * 4 + x * 4;
             for (var c = 0; c < 4; c++) {
-                img.data[idx + c] = Math.round(Math.max(0, Math.min(255, rgba[c] * 255)));
+                img[idx + c] = rgba[c];
             }
-            img.data[idx + 3] = 255;
         }
     }
-    ctx2d.putImageData(img, 0, 0);
     return img;
 }
 
