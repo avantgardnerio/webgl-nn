@@ -14,12 +14,17 @@ var gl;
 var vertexBuffer;
 var cnvOut;
 var ctxOut;
+var cnv2d;
+var ctx2d;
 
 function webGLStart() {
 
     // Hook up events
     document.getElementById('test_pattern').addEventListener('click', onTestPatternClick);
     document.getElementById('fileInput').addEventListener('change', onFileOpenClick);
+
+    cnv2d = document.getElementById("cnv2d");
+    ctx2d = cnv2d.getContext("2d");
 
     cnvOut = document.getElementById("cnvOut");
     ctxOut = cnvOut.getContext("2d");
@@ -66,14 +71,11 @@ function onFileLoaded(e) {
 }
 
 function draw2d(pixels, width, height) {
-    var canvas2d = document.getElementById("2d");
-    var ctx = canvas2d.getContext("2d");
-
-    var w = canvas2d.width;
-    var h = canvas2d.height;
+    var w = cnv2d.width;
+    var h = cnv2d.height;
     var sw = 500;
     var sh = 500;
-    var img = ctx.createImageData(w, h);
+    var img = ctx2d.createImageData(w, h);
 
     shader.setUniforms({
         uSampler: [pixels, width, height],
@@ -95,7 +97,7 @@ function draw2d(pixels, width, height) {
             img.data[idx + 3] = 255;
         }
     }
-    ctx.putImageData(img, 0, 0);
+    ctx2d.putImageData(img, 0, 0);
     return img;
 }
 
