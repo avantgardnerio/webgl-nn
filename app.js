@@ -22,7 +22,9 @@ function webGLStart() {
     cnvOut = document.getElementById("cnvOut");
     ctxOut = cnvOut.getContext("2d");
 
-    cnv3d = document.getElementById("cnv3d");
+    cnv3d = document.createElement("canvas");
+    cnv3d.width = 13;
+    cnv3d.height = 13;
     gl = cnv3d.getContext("experimental-webgl");
 
     gl.getExtension('OES_texture_float');
