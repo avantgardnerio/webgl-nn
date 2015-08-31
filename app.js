@@ -7,8 +7,6 @@ var js2glsl = require("js2glsl");
 
 var shader;
 
-var width = 39;
-var height = 39;
 var cnv3d;
 var gl;
 var vertexBuffer;
@@ -42,11 +40,10 @@ function onTestPatternClick() {
     putImageData(pattern.getPixels(), 500, 0, 29, 29);
 
     // 13x13
-    var tex = new Texture(gl, pattern.getWidth(), pattern.getHeight(), pattern.getPixels());
-    draw3d(tex, false);
-    var img2d = draw2d(pattern.getPixels(), 29, 13);
+    var img3d = draw3d(gl, pattern.getPixels(), 29, 13);
+    var img2d = draw2d(gl, pattern.getPixels(), 29, 13);
 
-    //putImageData(pattern.getPixels(), 0, 0, pattern.getWidth(), pattern.getHeight());
+    putImageData(img3d, 30, 0, 13, 13);
     putImageData(img2d, 530, 0, 13, 13);
 
     // TODO: Read 13x13 output, then render down to 5x5
@@ -84,7 +81,7 @@ function onFileLoaded(e) {
     draw2d(pixels, file.getWidth(), file.getHeight());
 }
 
-function draw2d(pixels, srcSize, dstSize) {
+function draw2d(gl, pixels, srcSize, dstSize) {
     var img = new Float32Array(dstSize * dstSize * 4);
     shader.setUniforms({
         uSampler: [pixels, srcSize, srcSize],
@@ -108,46 +105,40 @@ function draw2d(pixels, srcSize, dstSize) {
     return img;
 }
 
-function draw3d(texture, fbo) {
+function draw3d(gl, srcPixels, srcSize, dstSize) {
+    var srcTex = new Texture(gl, srcSize, srcSize, srcPixels);
+    var dstTex = new Texture(gl, dstSize, dstSize);
 
-    // Optionally render to frame buffer
-    if (fbo) {
-        // Create output texture
-        var tex = new Texture(gl, width, height);
-
-        // Create and attach frame buffer
-        var fbo = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex.getId(), 0);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
-            throw new Error("gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE");
-        }
+    // Create and attach frame buffer
+    var fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dstTex.getId(), 0);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
+        throw new Error("gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE");
     }
 
     // Init the scene
-    gl.viewport(0, 0, cnv3d.width, cnv3d.height);
+    gl.viewport(0, 0, dstSize, dstSize);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Set the texture
-    texture.activate(gl.TEXTURE0);
+    srcTex.activate(gl.TEXTURE0);
 
     // Upload constants
     shader.setSamplerUniform(0);
     shader.setTileCount(3.0);
     shader.setSkipCount(2.0);
-    shader.setSourceSize(29.0);
-    shader.setDestSize(13.0);
+    shader.setSourceSize(srcSize);
+    shader.setDestSize(dstSize);
 
     // Render
     vertexBuffer.draw(shader.getVertPosAttr());
 
     // http://stackoverflow.com/questions/17981163/webgl-read-pixels-from-floating-point-render-target
-    if (fbo) {
-        var pixels = new Float32Array(4 * width * height);
-        gl.readPixels(0, 0, width, height, gl.RGBA, gl.FLOAT, pixels);
-        console.log(pixels[0] + "," + pixels[1] + "," + pixels[2] + "," + pixels[3]);
-    }
+    var dstPixels = new Float32Array(dstSize * dstSize * 4);
+    gl.readPixels(0, 0, dstSize, dstSize, gl.RGBA, gl.FLOAT, dstPixels);
+    return dstPixels;
 }
 
 module.exports = webGLStart;
