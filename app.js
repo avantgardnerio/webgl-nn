@@ -25,8 +25,8 @@ function webGLStart() {
     ctxOut = cnvOut.getContext("2d");
 
     cnv3d = document.createElement("canvas");
-    cnv3d.width = 13;
-    cnv3d.height = 13;
+    cnv3d.width = 39;
+    cnv3d.height = 39;
     gl = cnv3d.getContext("experimental-webgl");
 
     gl.getExtension('OES_texture_float');
@@ -37,36 +37,36 @@ function webGLStart() {
     vertexBuffer = new UnitVertexBuffer(gl);
 
     renderer2d = new Renderer2d(shader);
-    renderer3d = new Renderer2d(shader, vertexBuffer);
+    renderer3d = new Renderer3d(shader, vertexBuffer);
 }
 
 function onTestPatternClick() {
     // 29x29
     var pattern = new TestPattern();
-    putImageData(pattern.getPixels(), 0, 0, 29, 29);
-    putImageData(pattern.getPixels(), 500, 0, 29, 29);
+    putImageData(pattern.getPixels(), 0, 0, 29);
+    putImageData(pattern.getPixels(), 500, 0, 29);
 
     // 13x13
-    var img3d = renderer3d.render(gl, pattern.getPixels(), 29, 13);
-    var img2d = renderer2d.render(gl, pattern.getPixels(), 29, 13);
+    var img3d = renderer3d.render(gl, pattern.getPixels(), 29, 39, 3);
+    var img2d = renderer2d.render(gl, pattern.getPixels(), 29, 39, 3);
 
-    putImageData(img3d, 30, 8, 13, 13);
-    putImageData(img2d, 530, 8, 13, 13);
+    putImageData(img3d, 40, 0, 39);
+    putImageData(img2d, 540, 0, 39);
 
     // 5x5
-    img3d = renderer3d.render(gl, img3d, 13, 5);
-    img2d = renderer2d.render(gl, img2d, 13, 5);
+    img3d = renderer3d.render(gl, img3d, 13, 5, 7);
+    img2d = renderer2d.render(gl, img2d, 13, 5, 7);
 
-    putImageData(img3d, 50, 12, 5, 5);
-    putImageData(img2d, 550, 12, 5, 5);
+    putImageData(img3d, 80, 0, 35);
+    putImageData(img2d, 580, 0, 35);
 }
 
-function putImageData(rgba, dx, dy, width, height) {
-    var img = ctxOut.createImageData(width, height);
-    for(var y = 0; y < height; y++) {
-        for(var x = 0; x < width; x++) {
+function putImageData(rgba, dx, dy, size) {
+    var img = ctxOut.createImageData(size, size);
+    for(var y = 0; y < size; y++) {
+        for(var x = 0; x < size; x++) {
             for(var c = 0; c < 4; c++) {
-                var idx = y * width * 4 + x * 4 + c;
+                var idx = y * size * 4 + x * 4 + c;
                 img.data[idx] = Math.round(Math.max(0, Math.min(255, rgba[idx] * 255)));
             }
         }

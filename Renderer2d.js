@@ -3,13 +3,13 @@ var js2glsl = require("js2glsl");
 var Renderer2d = function(shader) {
     var self = {};
 
-    self.render = function(gl, pixels, srcSize, dstSize) {
+    self.render = function(gl, pixels, srcSize, dstSize, tileCount) {
         var img = new Float32Array(dstSize * dstSize * 4);
         shader.setUniforms({
             uSampler: [pixels, srcSize, srcSize],
             sourceSize: srcSize,
             destinationSize: dstSize,
-            tileCount: 3.0,
+            tileCount: tileCount,
             skipCount: 2.0
         });
         var varyings = {};

@@ -1,9 +1,10 @@
 var js2glsl = require("js2glsl");
+var Texture = require('./Texture');
 
 var Renderer3d = function(shader, vertexBuffer) {
     var self = {};
 
-    self.render = function(gl, pixels, srcSize, dstSize) {
+    self.render = function(gl, srcPixels, srcSize, dstSize, tileCount) {
         var srcTex = new Texture(gl, srcSize, srcSize, srcPixels);
         var dstTex = new Texture(gl, dstSize, dstSize);
 
@@ -25,7 +26,7 @@ var Renderer3d = function(shader, vertexBuffer) {
 
         // Upload constants
         shader.setSamplerUniform(0);
-        shader.setTileCount(3.0);
+        shader.setTileCount(tileCount);
         shader.setSkipCount(2.0);
         shader.setSourceSize(srcSize);
         shader.setDestSize(dstSize);
