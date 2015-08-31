@@ -31,8 +31,8 @@ function webGLStart() {
 function onTestPatternClick() {
     var pattern = new TestPattern();
     var tex = new Texture(gl, pattern.getWidth(), pattern.getHeight(), pattern.getPixels());
-    drawScene(tex, false);
-    draw2D(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
+    draw3d(tex, false);
+    draw2d(pattern.getPixels(), pattern.getWidth(), pattern.getHeight());
 
     // TODO: Read 13x13 output, then render down to 5x5
 }
@@ -52,11 +52,11 @@ function onFileLoaded(e) {
 
     var tex = new Texture(gl, file.getWidth(), file.getHeight(), pixels);
 
-    drawScene(tex, false);
-    draw2D(pixels, file.getWidth(), file.getHeight());
+    draw3d(tex, false);
+    draw2d(pixels, file.getWidth(), file.getHeight());
 }
 
-function draw2D(pixels, width, height) {
+function draw2d(pixels, width, height) {
     var canvas2d = document.getElementById("2d");
     var ctx = canvas2d.getContext("2d");
 
@@ -89,7 +89,7 @@ function draw2D(pixels, width, height) {
     ctx.putImageData(img, 0, 0);
 }
 
-function drawScene(texture, fbo) {
+function draw3d(texture, fbo) {
 
     // Optionally render to frame buffer
     if (fbo) {
